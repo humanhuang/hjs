@@ -15,10 +15,18 @@ hjs.module
 
 // define a module
 define('mod/mod1', ['mod/mod2'], function(require, exports, module){
+
     var mod2 = require('mod/mod2');
+
 	module.exports = {
 		mod2: mod2
 	};
+	/*
+		also It support return statements;
+		return {
+			mod2: mod2
+		}
+	/*
 });
 ```
 
