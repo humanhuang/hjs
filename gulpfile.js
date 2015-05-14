@@ -15,11 +15,11 @@ gulp.task('default', function () {
 
     var files = [
         'header.js',
-        'util.js',
         'module.js',
         'moduleStatic.js',
         'hjs.js',
         'define.js',
+        'util.js',
         'footer.js'
     ].map(function (path) {
             return 'src/' + path;

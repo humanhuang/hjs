@@ -25,7 +25,7 @@ hjs.module = {
     noticesCache: Module.noticesCache,
     loadingSource: Module.loadingSource,
     loadedSource: Module.loadedSource,
-    mapSource: Module.mapSource
+    //mapSource: Module.mapSource
 };
 
 

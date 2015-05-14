@@ -8,7 +8,7 @@ Module.cache = {};          //当模块的js文件加载完后 会存放在此�
 Module.noticesCache = {};   //缓存每个模块所需要通知被依赖模块的实例
 Module.loadingSource = {};
 Module.loadedSource = {};
-Module.mapSource = {};
+//Module.mapSource = {};
 
 //尝试初始化
 Module.init = function(path){
@@ -40,12 +40,12 @@ Module.load = function(path, notice){
     var _path = Module.getFullPath(path), map;
 
     //模块有可能被合并至一个大文件中，即一个文件中可能包含多个模块，或者非模块。
-    if(!(map = Module.mapSource[_path])){
-        map = Module.mapSource[_path] = [];
-    }
+    //if(!(map = Module.mapSource[_path])){
+    //    map = Module.mapSource[_path] = [];
+    //}
 
     //将该模块放置map中，等待之后的通知
-    map.push(path);
+    //map.push(path);
 
     //如果文件没有加载
     if(!Module.loadingSource[_path]){
@@ -69,14 +69,16 @@ Module.load = function(path, notice){
         }
 
         function onload(){
-            //这边放置css中存在@import  import后会多次触发onload事件
+            // 先执行代码的define, 再执行onload回调
+            // 这边放置css中存在@import  import后会多次触发onload事件
             if(isLoaded) return;
 
             if(!source.readyState || /loaded|complete/.test(source.readyState)){
                 source.onload = source.onerror = source.onreadystatechange = null;
-                //已加载
+
                 Module.loadedSource[_path] = isLoaded = 1;
-                //手动触发已加载方法，防止文件是非模块，hjs.async之类，导致无法通知依赖模块执行，也有可能是多个文件合并，需要挨个通知
+
+                // 处理raw.js, 或者combo的情况
                 Module.loaded(_path);
             }
         }
@@ -102,15 +104,13 @@ Module.load = function(path, notice){
     }
 };
 
-//此方法，用于兼容多个文件合并，或者非模块文件的加载，非模块文件不会define而导致的无法通知依赖模块的情况
+// a) 为了兼容加载没有define头的js文件
+// b) 兼容多个文件combo的情况 @todo
 Module.loaded = function(path){
-    var map = Module.mapSource[path];
-
-    each(map, function(p){
-        Module.init(p);
-    });
-
-    map.length = 0;
+    if(Module.cache[path]) {
+        return ;
+    }
+    Module.init(path);
 };
 
 //获取列表依赖

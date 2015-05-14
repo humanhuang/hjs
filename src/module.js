@@ -1,4 +1,4 @@
-var Module = function(modulename, depArr, callback, use){
+function Module(modulename, depArr, callback, use){
     if(Module.cache[modulename]){
         console && console.log('module ' + modulename + ' is exists!');
         return;
