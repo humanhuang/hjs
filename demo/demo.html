@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script type="text/javascript" src="../hjs.js"></script>
+</head>
+<body>
+
+
+<script>
+
+hjs(['mod/mod1', 'mod/mod2'], function(mod1, mod2) {
+    console.log(mod1, mod2);
+});
+
+hjs(['mod/mod1', 'mod/mod2'], function(mod1, mod2) {
+    console.log(mod1, mod2);
+});
+
+
+/*
+    语法糖
+
+    hjs('mod/mod1', function(mod) {
+
+    });
+
+
+ */
+</script>
+
+</body>
+</html>
