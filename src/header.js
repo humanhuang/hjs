@@ -1,2 +1,2 @@
 var hjs, define;
-(function(window, document){
+(function(window, doc){

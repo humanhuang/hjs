@@ -55,7 +55,7 @@ Module.load = function(path, notice){
             isCss = /\.css$/.test(path),
             isLoaded = 0,
             isOldWebKit = +navigator.userAgent.replace(/.*(?:Apple|Android)WebKit\/(\d+).*/, "$1") < 536,
-            source = document.createElement(isCss ? 'link' : 'script'),
+            source = doc.createElement(isCss ? 'link' : 'script'),
             supportOnload = 'onload' in source;
 
         //支持css加载
@@ -85,7 +85,7 @@ Module.load = function(path, notice){
 
         source.onload = source.onerror = source.onreadystatechange = onload;
         source.charset = hjs.config.charset;
-        document.getElementsByTagName('head')[0].appendChild(source);
+        doc.getElementsByTagName('head')[0].appendChild(source);
 
         //有些老版本浏览器不支持对css的onload事件，需检查css的sheet属性是否存在，如果加载完后，此属性会出现
         if(isCss && (isOldWebKit || !supportOnload)){
@@ -127,7 +127,25 @@ Module.getDeps = function(deps){
 };
 
 //获取模块路径
+/*
+    mod/mod1
+    mod/mod1.js
+    ./mod/mod1.js
+    /mod/mod1.js
+    mod/aa.ff/mod1.js?aa=123.jpg
+ */
 Module.getPath = function(path){
+    var start = path.substr(0,1), hasPrefix;
+
+    if(start == '.') {
+
+    }
+    else if(start == '/') {
+
+    }
+    else if(/[\w\d]/.test(start)) {
+
+    }
     //if(/:\/\//.test(path)) return path;
     //
     //var config = require.config, baseurl = config.baseurl || '';

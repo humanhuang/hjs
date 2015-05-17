@@ -1,15 +1,12 @@
 
-//判断是否为数组
 function isArray(array){
     return Object.prototype.toString.call(array) == '[object Array]';
 }
 
-//转换数组
 function makeArray(array){
     return array ? isArray(array) ? array : [array] : [];
 }
 
-//简单迭代数组
 function each(obj, callback){
     if(isArray(obj)){
         for(var i = 0; i < obj.length; i++)
@@ -20,7 +17,6 @@ function each(obj, callback){
     }
 }
 
-//查找元素是否在数组中
 function inArray(array, item){
     array = makeArray(array);
 
@@ -35,7 +31,6 @@ function inArray(array, item){
     }
 }
 
-//是否函数
 function isFunction(callback){
     return typeof callback == 'function';
 }
