@@ -1,4 +1,7 @@
 function Module(modulename, depArr, callback, use){
+
+    modulename = Module.getPath(modulename);
+
     if(Module.cache[modulename]){
         console && console.log('module ' + modulename + ' is exists!');
         return;

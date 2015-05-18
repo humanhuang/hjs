@@ -25,24 +25,25 @@ Module.require = function(modulename){
 Module.load = function(path, notice){
     var cache, module;
 
-    // 如果该模块已经加载，则直接通知依赖此模块的主模块
-    if(cache = Module.cache[path]) return cache.noticeModule(notice);
+    if(notice) {
+        // 如果该模块已经加载，则直接通知依赖此模块的主模块
+        if(cache = Module.cache[path]) return cache.noticeModule(notice);
 
-    //如果该路径没有初始化，即没有new，也就是没有加载完毕，则缓存通知模块
-    //如果该模块也被其他模块依赖，就在noticesCache[path].notices.push(依赖此模块的主模块)
-    if(module = Module.noticesCache[path]) return module.notices.push(notice);
+        //如果该路径没有初始化，即没有new，也就是没有加载完毕，则缓存通知模块
+        //如果该模块也被其他模块依赖，就在noticesCache[path].notices.push(依赖此模块的主模块)
+        //Module.noticesCache[path] 这个有值，说明已经在加载请求中了，但是还没有执行。
+        if(module = Module.noticesCache[path]) return module.notices.push(notice);
 
-    //如果没有缓存，则创建
-    Module.noticesCache[path] = {notices: [notice]};
+        //如果没有缓存，则创建
+        Module.noticesCache[path] = {notices: [notice]};
+    }
 
     //获取该模块的全路径
-    //var _path = Module.getFullPath(path);
-    var _path = path
-
+    var fullPath = Module.getFullPath(path);
 
     //如果文件没有加载
-    if(!Module.loadingSource[_path]){
-        Module.loadingSource[_path] = 1;
+    if(!Module.loadingSource[fullPath]){
+        Module.loadingSource[fullPath] = 1;
 
         var
             isCss = /\.css$/.test(path),
@@ -55,10 +56,10 @@ Module.load = function(path, notice){
         if(isCss){
             source.rel = 'stylesheet';
             source.type = 'text/css';
-            source.href = _path;
+            source.href = fullPath;
         }else{
             source.type = 'text/javascript';
-            source.src = _path;
+            source.src = fullPath;
         }
 
         function onload(){
@@ -69,15 +70,15 @@ Module.load = function(path, notice){
             if(!source.readyState || /loaded|complete/.test(source.readyState)){
                 source.onload = source.onerror = source.onreadystatechange = null;
 
-                Module.loadedSource[_path] = isLoaded = 1;
+                Module.loadedSource[fullPath] = isLoaded = 1;
 
                 // 处理raw.js, 或者combo的情况
-                Module.loaded(_path);
+                Module.loaded(path);
             }
         }
 
         source.onload = source.onerror = source.onreadystatechange = onload;
-        source.charset = hjs.config.charset;
+        source.charset = hjs.config().charset;
         doc.getElementsByTagName('head')[0].appendChild(source);
 
         //有些老版本浏览器不支持对css的onload事件，需检查css的sheet属性是否存在，如果加载完后，此属性会出现
@@ -91,7 +92,7 @@ Module.load = function(path, notice){
                 setTimeout(arguments.callee);
             });
         }
-    }else if(Module.loadedSource[_path]){
+    }else if(Module.loadedSource[fullPath]){
         //如果加载完毕，尝试初始化。
         Module.init(path);
     }

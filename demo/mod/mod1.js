@@ -1,4 +1,6 @@
 define('mod/mod1', function(require, exports, module){
+	require('mod/raw1');
+	require('mod/1.css');
 	module.exports = {
 		mod2: require('mod/mod2'),
 		data:require('mod/data/data')
