@@ -10,13 +10,35 @@
 
 <script>
 
-//hjs.config.map = {
-//    'mod/mod1': ['mod/mod1', 'mod/mod2']
-//};
+hjs.config({
+    base:'http://a.com/project_fe/kindteam/hjs/demo/',
+    alias: {
+        'mod1': 'mod/mod1'
+    },
+    paths: {
+        'aaaa': 'abc/abc/abc'
+    },
+    map: [
+        ['.js', '.js?' + +(new Date())]
+    ]
+});
 
-hjs(['mod/mod1'], function(mod1) {
+//hjs(['../mod/path'], function(path) {
+//    console.log(path);
+//});
+
+hjs(['mod1'], function(mod1) {
     console.log(mod1);
 });
+
+
+//hjs(['a'], function(mod1) {
+//    console.log(mod1);
+//});
+
+//hjs(['mod/mod1'], function(mod1) {
+//    console.log(mod1);
+//});
 
 //hjs(['mod/mod1', 'mod/mod2'], function(mod1, mod2) {
 //    console.log(mod1, mod2);

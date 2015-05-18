@@ -24,51 +24,33 @@ hjs.module = {
     cache: Module.cache,
     noticesCache: Module.noticesCache,
     loadingSource: Module.loadingSource,
-    loadedSource: Module.loadedSource,
-    //mapSource: Module.mapSource
+    loadedSource: Module.loadedSource
 };
 
+var _config = {
+    base: '',
+    alias: {
 
-hjs.config = {
-    domain: '',
-    baseurl: '',
-    rules: [],
-    charset: 'utf-8',
-    deps: {},
-    map: {}
+    },
+    paths: {
+
+    },
+    map: [
+
+    ],
+    preload: [
+
+    ],
+    debug: true,
+    charset: 'utf-8'
 };
 
+hjs.config = function(config) {
 
-//hjs.mergeConfig = function(config){
-//    var _config = hjs.config;
-//
-//    each(config, function(c, i){
-//        var tmp = _config[i];
-//
-//        if(i == 'map'){
-//            each(c, function(map, name){
-//                var yMap = tmp[name];
-//
-//                if(!yMap){
-//                    yMap = map;
-//                }else{
-//                    each(makeArray(map), function(item){
-//                        !inArray(yMap, item) && yMap.push(item);
-//                    });
-//                }
-//
-//                tmp[name] = yMap;
-//            });
-//        }else if(i == 'deps'){
-//            each(c, function(dep, name){
-//                tmp[name] = dep;
-//            });
-//        }else if(isArray(c)){
-//            tmp.push.apply(tmp, c);
-//        }else{
-//            tmp = c;
-//        }
-//
-//        _config[i] = tmp;
-//    });
-//};
+    if(!config) return _config;
+
+    each(config, function(v, k) {
+        _config[k] = config[k];
+    });
+
+};

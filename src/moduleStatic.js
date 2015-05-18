@@ -8,7 +8,6 @@ Module.cache = {};          //当模块的js文件加载完后 会存放在此�
 Module.noticesCache = {};   //缓存每个模块所需要通知被依赖模块的实例
 Module.loadingSource = {};
 Module.loadedSource = {};
-//Module.mapSource = {};
 
 //尝试初始化
 Module.init = function(path){
@@ -37,15 +36,9 @@ Module.load = function(path, notice){
     Module.noticesCache[path] = {notices: [notice]};
 
     //获取该模块的全路径
-    var _path = Module.getFullPath(path), map;
+    //var _path = Module.getFullPath(path);
+    var _path = path
 
-    //模块有可能被合并至一个大文件中，即一个文件中可能包含多个模块，或者非模块。
-    //if(!(map = Module.mapSource[_path])){
-    //    map = Module.mapSource[_path] = [];
-    //}
-
-    //将该模块放置map中，等待之后的通知
-    //map.push(path);
 
     //如果文件没有加载
     if(!Module.loadingSource[_path]){
@@ -120,7 +113,6 @@ Module.getDeps = function(deps){
     each(makeArray(deps), function(dep){
         dep = Module.getPath(dep);
         d.push(dep);
-        d.push.apply(d, Module.getDeps(hjs.config.deps[dep]));
     });
 
     return d;
@@ -135,44 +127,62 @@ Module.getDeps = function(deps){
     mod/aa.ff/mod1.js?aa=123.jpg
  */
 Module.getPath = function(path){
-    var start = path.substr(0,1), hasPrefix;
+    var  last = path.length - 1,
+        config = hjs.config();
 
-    if(start == '.') {
 
+    //alias
+    if(config.alias[path]) {
+        path = config.alias[path];
     }
-    else if(start == '/') {
 
+    //paths
+    if(config.paths[path]) {
+        path = config.paths[path];
     }
-    else if(/[\w\d]/.test(start)) {
 
-    }
-    //if(/:\/\//.test(path)) return path;
-    //
-    //var config = require.config, baseurl = config.baseurl || '';
-    //
-    //each(config.rules || [], function(item){
-    //    path = path.replace(item[0], item[1]);
-    //});
-    //
-    //if(baseurl && path.charAt(0) != '/') path = baseurl.replace(/\/+$/, '') + '/' + path;
+    //add prefix .js
+    path = path.substring(last - 2) === '.js' ||
+            path.indexOf('?') > 0 ||
+            path.substring(last - 3) === '.css' ||
+            path.substring(last) === '/' ?
+            path : path + '.js';
 
-    //return path.replace(/\/+/g, '/');
-
-    path += '.js';
     return path;
 };
 
+var re_dot = /\/\.\//g,
+    re_double_dot = /\/[^/]+\/\.\.\//g,
+    re_double_slash = /[^:/]\/{2}/g;
+
 //获取全路径
 Module.getFullPath = function(path){
-    //var config = hjs.config, map = config.map || {}, domain = config.domain || '';
-    //
-    //for(var i in map){
-    //    if(map.hasOwnProperty(i) && inArray(map[i], path)){
-    //        path = i; break;
-    //    }
-    //}
-    //
-    //return !/:\/\//.test(path) ? domain + path : path;
+    var config = hjs.config(),
+        base = config.base;
+
+    if(base) {
+        if(base.substr(base.length - 1) !== '/') {
+            base += '/'
+        }
+        path = base + path;
+    }
+
+    // 相对路径
+
+    // /a/b/./c/./d ==> /a/b/c/d
+    path = path.replace(re_dot, '/');
+
+    // a/b/c/../../d  ==>  a/b/../d  ==>  a/d
+    path = path.replace(re_double_dot, '/');
+
+    // a//b/c  ==>  a/b/c
+    path = path.replace(re_double_slash, '/');
+
+
+    //config.map
+    each(config.map, function(v) {
+        path = path.replace(v[0], v[1]);
+    });
 
     return path
 };
