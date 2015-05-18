@@ -26,7 +26,7 @@ define('mod/mod1', ['mod/mod2'], function(require, exports, module){
 		return {
 			mod2: mod2
 		}
-	/*
+	*/
 });
 
 // define a module without dependences array
