@@ -4,32 +4,22 @@ A very very tiny mobile AMD Loader which has a neat architecture.
 
 
 ### Usage
-```js
-// require
-hjs(['mod/mod1', 'mod/mod2'], function(mod1, mod2) {
-    console.log(mod1, mod2);
-});
 
 // lookup the Loading/Loaded Modules for debug;
-hjs.module
+```js
+    console.log(js.module)
+```
 
-// define a module with dependences array
+```js
+// define a module explicit dependences array
 define('mod/mod1', ['mod/mod2'], function(require, exports, module){
-
     var mod2 = require('mod/mod2');
-
 	module.exports = {
 		mod2: mod2
 	};
-	/*
-		also It support return statements;
-		return {
-			mod2: mod2
-		}
-	*/
 });
 
-// define a module without dependences array
+// define a module implicit dependences array
 define('mod/mod1', function(require, exports, module){
 
     // 支持css
@@ -51,12 +41,17 @@ define('mod/mod1', function(require, exports, module){
 	module.exports = {
 		mod2: mod2
 	};
+    /*
+    // also It support return statements like module.exports;
+    return {
+        mod2: mod2
+    }
+    */
 });
-
 
 // config
 hjs.config({
-    base:'http://a.com/project_fe/kindteam/hjs/demo/',
+    base:'http://localhost/project_fe/kindteam/hjs/demo/',
     alias: {
         'mod1': 'mod/mod1'
     },
