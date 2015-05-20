@@ -32,12 +32,27 @@ define('mod/mod1', ['mod/mod2'], function(require, exports, module){
 // define a module without dependences array
 define('mod/mod1', function(require, exports, module){
 
+    // 支持css
+    require('mod/1.css');
+
     var mod2 = require('mod/mod2');
+
+    // 支持脚本
+    var script = require('mod/frag.script');
+
+    // 支持json
+    var data = require('mod/data.json');
+
+    // 支持html片段
+    var tpl = require('mod/tpl.html');
+
+    var mod2 = require('mod/mod2.js');
 
 	module.exports = {
 		mod2: mod2
 	};
 });
+
 
 // config
 hjs.config({
