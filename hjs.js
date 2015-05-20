@@ -24,7 +24,7 @@ function Module(modulename, depArr, callback, use){
 
     self.callback = callback;
 
-    self.depths = Module.getDeps(depArr);
+    self.depths = Module.getDeps(depArr, self);
 
     self.needLoadDepth = self.depths.length;
 
@@ -153,7 +153,7 @@ Module.load = function(path, notice){
 
         //如果该路径没有初始化，即没有new，也就是没有加载完毕，则缓存通知模块
         //如果该模块也被其他模块依赖，就在noticesCache[path].notices.push(依赖此模块的主模块)
-        //Module.noticesCache[path] 这个有值，说明已经在加载请求中了，但是还没有执行。
+        //Module.noticesCache[path] 这个有值，说明已经准备加载了，但是还没有执行。
         if(module = Module.noticesCache[path]) return module.notices.push(notice);
 
         //如果没有缓存，则创建
@@ -163,25 +163,105 @@ Module.load = function(path, notice){
     //获取该模块的全路径
     var fullPath = Module.getFullPath(path);
 
+
     //如果文件没有加载
     if(!Module.loadingSource[fullPath]){
         Module.loadingSource[fullPath] = 1;
 
-        var
-            isCss = /\.css$/.test(path),
+        /*
+            匹配文件后缀
+         demo/demo.html
+         demo/demo.html?v=123
+         demo/demo.html#aaa
+         demo/demo.html?v=123#aaa
+         demo/demo.html?v=123.123
+         aaa/de.mo/demo.html?v=123.123
+         /\.([^?/]+)(?:\?\S+)?$/.exec('aaa/de.mo/demo.html?b=123.123')
+        */
+
+        var filePrefix = /\.([^?/]+)(?:\?\S+)?$/.exec(path)[1],
+            isCss = /\.css(?:\?\S+)?$/.test(path),
             isLoaded = 0,
             isOldWebKit = +navigator.userAgent.replace(/.*(?:Apple|Android)WebKit\/(\d+).*/, "$1") < 536,
-            source = doc.createElement(isCss ? 'link' : 'script'),
-            supportOnload = 'onload' in source;
+            source,
+            supportOnload;
 
-        //支持css加载
-        if(isCss){
+
+        if(filePrefix == 'js') {
+            source = doc.createElement('script');
+            source.type = 'text/javascript';
+            source.src = fullPath;
+
+        }
+        else if(filePrefix == 'css') {
+
+            source = doc.createElement('link');
             source.rel = 'stylesheet';
             source.type = 'text/css';
             source.href = fullPath;
-        }else{
-            source.type = 'text/javascript';
-            source.src = fullPath;
+            supportOnload = 'onload' in source;
+
+
+            if(isCss && (isOldWebKit || !supportOnload)){
+                var id = setTimeout(function(){
+                    if(source.sheet){
+                        clearTimeout(id);
+                        return onload();
+                    }
+                    setTimeout(arguments.callee);
+                });
+            }
+
+        }
+        else {
+            xhr(path, function(text) {
+                if(filePrefix == 'json') {
+                    var jsonObj;
+                    try { jsonObj = JSON.parse(text);} catch(e) {jsonObj = text};
+
+                    define(path, [], function(){return jsonObj;});
+                }
+                else if(filePrefix == 'script') {
+                    define(path, [], function(){return glbalEval(text);});
+                }
+                else  {
+                    define(path, [], function(){return text;});
+                }
+            });
+        }
+
+        function glbalEval(text) {
+            text && (window.execScript || function(text){
+                eval.call(window, text);
+            })(text);
+        }
+
+        function xhr(url, callback) {
+            var r = window.XMLHttpRequest ?
+                new XMLHttpRequest() :
+                new ActiveXObject("Microsoft.XMLHTTP");
+
+            r.open("GET", url, true)
+
+            r.onreadystatechange = function() {
+                if (r.readyState === 4) {
+                    // Support local file
+                    if (r.status > 399 && r.status < 600) {
+                        throw new Error("Could not load: " + url + ", status = " + r.status)
+                    }
+                    else {
+                        callback(r.responseText)
+                    }
+                }
+            };
+
+            return r.send(null);
+        }
+
+        if(filePrefix == 'js' || filePrefix == 'css') {
+            source.onload = source.onerror = source.onreadystatechange = onload;
+            source.charset = hjs.config().charset;
+            doc.getElementsByTagName('head')[0].appendChild(source);
         }
 
         function onload(){
@@ -194,27 +274,13 @@ Module.load = function(path, notice){
 
                 Module.loadedSource[fullPath] = isLoaded = 1;
 
-                // 处理raw.js, 或者combo的情况
+                // 处理raw.js, css. 或者combo的情况
                 Module.loaded(path);
             }
         }
 
-        source.onload = source.onerror = source.onreadystatechange = onload;
-        source.charset = hjs.config().charset;
-        doc.getElementsByTagName('head')[0].appendChild(source);
-
-        //有些老版本浏览器不支持对css的onload事件，需检查css的sheet属性是否存在，如果加载完后，此属性会出现
-        if(isCss && (isOldWebKit || !supportOnload)){
-            var id = setTimeout(function(){
-                if(source.sheet){
-                    clearTimeout(id);
-                    return onload();
-                }
-
-                setTimeout(arguments.callee);
-            });
-        }
-    }else if(Module.loadedSource[fullPath]){
+    }
+    else if(Module.loadedSource[fullPath]){
         //如果加载完毕，尝试初始化。
         Module.init(path);
     }
@@ -230,11 +296,11 @@ Module.loaded = function(path){
 };
 
 //获取列表依赖
-Module.getDeps = function(deps){
+Module.getDeps = function(deps, self){
     var d = [];
 
     each(makeArray(deps), function(dep){
-        dep = Module.getPath(dep);
+        dep = Module.getPath(dep, self);
         d.push(dep);
     });
 
@@ -249,8 +315,8 @@ Module.getDeps = function(deps){
     /mod/mod1.js
     mod/aa.ff/mod1.js?aa=123.jpg
  */
-Module.getPath = function(path){
-    var  last = path.length - 1,
+Module.getPath = function(path, self){
+    var  lastIndex = path.length - 1,
         config = hjs.config();
 
 
@@ -264,12 +330,25 @@ Module.getPath = function(path){
         path = config.paths[path];
     }
 
-    //add prefix .js
-    path = path.substring(last - 2) === '.js' ||
-            path.indexOf('?') > 0 ||
-            path.substring(last - 3) === '.css' ||
-            path.substring(last) === '/' ?
-            path : path + '.js';
+
+    // ./mod1.js
+    // moduleName: mod/mod1.js,    mod1.js,   ./mod1.js
+    //
+    //if(path.substr(0,2) == './') {
+    //    //
+    //    if(self) {
+    //        var matches = /(\S+)\/(?=[^/]+$)/g.exec(self.modulename);
+    //        if(matches) {
+    //            path = matches[1] +  path.substr(1);
+    //        }
+    //    }
+    //}
+
+    var matches = /\.([^?/]+)(?:\?\S+)?$/.exec(path);
+
+    if( !matches) {
+        path = path + '.js';
+    }
 
     return path;
 };
@@ -413,9 +492,11 @@ define = function(modulename, deps, callback){
     new Module(modulename, deps, callback);
 };
 
+var REQUIRE_RE = /"(?:\\"|[^"])*"|'(?:\\'|[^'])*'|\/\*[\S\s]*?\*\/|\/(?:\\\/|[^\/\r\n])+\/(?=[^\/])|\/\/.*|\.\s*require|(?:^|[^$])\brequire\s*\(\s*(["'])(.+?)\1\s*\)/g;
+
 function findDepsArr(deps, callbackStr) {
-    callbackStr.toString().replace(/require\(\s*['"](.*)['"]\s*\)/mg, function(_, dep) {
-        deps.push(dep);
+    callbackStr.toString().replace(REQUIRE_RE, function(_, _, dep) {
+        dep && deps.push(dep);
     });
 }
 

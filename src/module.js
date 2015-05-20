@@ -13,7 +13,7 @@ function Module(modulename, depArr, callback, use){
 
     self.callback = callback;
 
-    self.depths = Module.getDeps(depArr);
+    self.depths = Module.getDeps(depArr, self);
 
     self.needLoadDepth = self.depths.length;
 

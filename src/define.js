@@ -23,8 +23,10 @@ define = function(modulename, deps, callback){
     new Module(modulename, deps, callback);
 };
 
+var REQUIRE_RE = /"(?:\\"|[^"])*"|'(?:\\'|[^'])*'|\/\*[\S\s]*?\*\/|\/(?:\\\/|[^\/\r\n])+\/(?=[^\/])|\/\/.*|\.\s*require|(?:^|[^$])\brequire\s*\(\s*(["'])(.+?)\1\s*\)/g;
+
 function findDepsArr(deps, callbackStr) {
-    callbackStr.toString().replace(/require\(\s*['"](.*)['"]\s*\)/mg, function(_, dep) {
-        deps.push(dep);
+    callbackStr.toString().replace(REQUIRE_RE, function(_, _, dep) {
+        dep && deps.push(dep);
     });
 }
