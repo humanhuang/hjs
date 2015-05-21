@@ -5,7 +5,7 @@ A very very tiny mobile AMD Loader which has a neat architecture.
 
 ### Usage
 
-// lookup the Loading/Loaded Modules for debug;
+#### lookup the Module Status for debug;
 ```js
     console.log(js.module)
 ```
