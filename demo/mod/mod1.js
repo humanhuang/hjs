@@ -7,17 +7,21 @@ define('mod/mod1', function(require, exports, module){
 	//require('mod/1.css');
 	//var mod2 = require('mod/mod2.js');
 
-	var data = require('mod/data.json');
-	var tpl = require('mod/tpl.html');
+	var mod2 = require('mod/mod2');
+
+	console.log('mod/mod1');
+
+	//var data = require('mod/data.json');
+	//var tpl = require('mod/tpl.html');
 
 
-	 for(var i in data) {
-		 var reg = new RegExp('{' + i + '}', 'gm');
-		 tpl = tpl.replace(reg, function(_) {
-				return data[i];
-		 });
-	 }
-	console.log(tpl);
+	// for(var i in data) {
+	//	 var reg = new RegExp('{' + i + '}', 'gm');
+	//	 tpl = tpl.replace(reg, function(_) {
+	//			return data[i];
+	//	 });
+	// }
+	//console.log(tpl);
 
 	module.exports = {
 		finish: true
