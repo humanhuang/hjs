@@ -5,6 +5,8 @@ A very very tiny mobile AMD Loader which has a neat architecture.
 
 ### Usage
 
+#### 实现了AMD和CMD规范
+
 #### lookup the Module Status for debug;
 ```js
     console.log(js.module)
