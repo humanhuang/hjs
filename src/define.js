@@ -15,9 +15,23 @@ define = function(modulename, deps, callback){
         deps = [];
     }
 
+    if(typeof modulename == 'function') {
+        callback = modulename;
+        modulename = 'anonymous';
+        deps = [];
+    }
+
     //如果没有定义依赖，则从callback里面找依赖关系
     if(!deps.length) {
         findDepsArr(deps, callback.toString())
+    }
+
+    // @todo 在这里处理 define(callback) 匿名模块
+
+    if(modulename == 'anonymous') {
+        Module.anonymousCallback = callback;
+        Module.anonymouseDeps = deps;
+        return ;
     }
 
     new Module(modulename, deps, callback);

@@ -7,6 +7,12 @@ function Module(modulename, depArr, callback, use){
         return;
     }
 
+    // 匿名模块执行 onload 回调
+    if(depArr == undefined) {
+        callback = Module.anonymousCallback;
+        depArr = Module.anonymouseDeps;
+    }
+
     var self = this;
 
     self.modulename = modulename;
