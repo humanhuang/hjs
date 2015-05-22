@@ -139,7 +139,9 @@ Module.load = function(path, notice){
         if(filePrefix == 'js' || filePrefix == 'css') {
             source.onload = source.onerror = source.onreadystatechange = onload;
             source.charset = hjs.config().charset;
-            doc.getElementsByTagName('head')[0].appendChild(source);
+            var head = doc.getElementsByTagName('head')[0];
+            //doc.getElementsByTagName('head')[0].appendChild(source);
+            head.insertBefore(source, head.firstChild)
         }
 
         function onload(){

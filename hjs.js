@@ -18,6 +18,12 @@ function Module(modulename, depArr, callback, use){
         return;
     }
 
+    // 匿名模块执行 onload 回调
+    if(depArr == undefined) {
+        callback = Module.anonymousCallback;
+        depArr = Module.anonymouseDeps;
+    }
+
     var self = this;
 
     self.modulename = modulename;
@@ -261,7 +267,9 @@ Module.load = function(path, notice){
         if(filePrefix == 'js' || filePrefix == 'css') {
             source.onload = source.onerror = source.onreadystatechange = onload;
             source.charset = hjs.config().charset;
-            doc.getElementsByTagName('head')[0].appendChild(source);
+            var head = doc.getElementsByTagName('head')[0];
+            //doc.getElementsByTagName('head')[0].appendChild(source);
+            head.insertBefore(source, head.firstChild)
         }
 
         function onload(){
@@ -484,9 +492,23 @@ define = function(modulename, deps, callback){
         deps = [];
     }
 
+    if(typeof modulename == 'function') {
+        callback = modulename;
+        modulename = 'anonymous';
+        deps = [];
+    }
+
     //如果没有定义依赖，则从callback里面找依赖关系
     if(!deps.length) {
         findDepsArr(deps, callback.toString())
+    }
+
+    // @todo 在这里处理 define(callback) 匿名模块
+
+    if(modulename == 'anonymous') {
+        Module.anonymousCallback = callback;
+        Module.anonymouseDeps = deps;
+        return ;
     }
 
     new Module(modulename, deps, callback);

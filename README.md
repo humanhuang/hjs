@@ -19,6 +19,12 @@ define('mod/mod1', ['mod/mod2'], function(require, exports, module){
 	};
 });
 
+// define a module anonymous @todo firefox 下有问题。
+define(function(require, exports, module){
+    var mod1 = require('mod/mod1');
+    exports.mod1 = mod1;
+});
+
 // define a module implicit dependences array
 define('mod/mod1', function(require, exports, module){
 
